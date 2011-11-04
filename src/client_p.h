@@ -124,6 +124,10 @@ public:
 		device->open(QIODevice::ReadWrite);
 		q->connect(device, SIGNAL(readyRead()), q, SLOT(_q_new_data()));
 	}
+	~ClientPrivate()
+	{
+		delete device;
+	}
 	void init();
 	void send(const Stanza &stanza)
 	{

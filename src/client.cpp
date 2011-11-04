@@ -280,7 +280,7 @@ void Client::send(const Presence &pres)
 {
 	Q_D(Client);
 	qDebug() << Q_FUNC_INFO << d->jid << d->conn << pres.priority();
-	qDebug() << d->conn->isOpen();
+	qDebug() << (d->conn && d->conn->isOpen());
 	if(!d->conn || !d->conn->isOpen())
 		return;
 	if (StanzaPrivate::get(pres) == StanzaPrivate::get(d->presence)) {

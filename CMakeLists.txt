@@ -75,10 +75,11 @@ JREEN_WRAP_CPP(MOC_SRC ${HDR})
 
 # This project will generate library
 
-if(SYMBIAN)
+set(JREEN_BUILD_STATIC_LIBRARY OFF CACHE BOOL "Whether to build Jreen as a static library or not")
+if(SYMBIAN OR JREEN_BUILD_STATIC_LIBRARY)
 	set(JREEN_BUILD_TYPE STATIC)
 else()
-set(JREEN_BUILD_TYPE SHARED)
+	set(JREEN_BUILD_TYPE SHARED)
 endif()
 
 ADD_LIBRARY(jreen ${JREEN_BUILD_TYPE} ${SRC} ${MOC_SRC} ${HDR} )
