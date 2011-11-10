@@ -35,10 +35,11 @@
 namespace Jreen
 {
 
-SASLFeature::SASLFeature() : StreamFeature(SASL), m_isSupported(QCA::isSupported("sasl"))
+SASLFeature::SASLFeature() : StreamFeature(SASL)
 {
 	QCA::init();
-	QCA::setAppName("qutim");	
+	QCA::setAppName("jreen");
+	m_isSupported = QCA::isSupported("sasl");
 	m_depth = 0;
 	qDebug() << QCA::supportedFeatures();
 #ifdef HAVE_SIMPLESASL
