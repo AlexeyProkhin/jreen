@@ -1,40 +1,58 @@
 /****************************************************************************
- *
- *  This file is part of qutIM
- *
- *  Copyright (c) 2010 by Nigmatullin Ruslan <euroelessar@gmail.com>
- *
- ***************************************************************************
- *                                                                         *
- *   This file is part of free software; you can redistribute it and/or    *
- *   modify it under the terms of the GNU General Public License as        *
- *   published by the Free Software Foundation; either version 2 of the    *
- *   License, or (at your option) any later version.                       *
- *                                                                         *
- ***************************************************************************
- ****************************************************************************/
+**
+** Jreen
+**
+** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+**
+*****************************************************************************
+**
+** $JREEN_BEGIN_LICENSE$
+** This program is free software: you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+** See the GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see http://www.gnu.org/licenses/.
+** $JREEN_END_LICENSE$
+**
+****************************************************************************/
 
-#include "saslfeature.h"
+#include "saslfeature_p.h"
 #include "client_p.h"
-#include "../3rdparty/simplesasl/simplesasl.h"
 #include <QUrl>
 #include <QDebug>
+
+#ifdef HAVE_SIMPLESASL
+# include "../3rdparty/simplesasl/simplesasl.h"
+#endif
 
 namespace Jreen
 {
 
-SASLFeature::SASLFeature() : StreamFeature(SASL)
+SASLFeature::SASLFeature() : StreamFeature(SASL), m_isSupported(QCA::isSupported("sasl"))
 {
 	QCA::init();
 	QCA::setAppName("qutim");	
 	m_depth = 0;
 	qDebug() << QCA::supportedFeatures();
-	if (!QCA::isSupported("sasl"))
+#ifdef HAVE_SIMPLESASL
+	if (!m_isSupported) {
 		QCA::insertProvider(XMPP::createProviderSimpleSASL());
+		m_isSupported = true;
+	}
+#endif
 }
 
 void SASLFeature::init()
 {
+	if (!m_isSupported)
+		return;
 	Q_ASSERT(!m_sasl);
 	m_sasl.reset(new QCA::SASL(this));
 	m_sasl->setConstraints(QCA::SASL::AllowPlain);
@@ -52,6 +70,8 @@ void SASLFeature::init()
 
 void SASLFeature::reset()
 {
+	if (!m_isSupported)
+		return;
 	m_depth = 0;
 	m_mechs.clear();
 	m_sasl.reset(0);
@@ -59,6 +79,8 @@ void SASLFeature::reset()
 
 bool SASLFeature::canParse(const QStringRef &name, const QStringRef &uri, const QXmlStreamAttributes &attributes)
 {
+	if (!m_isSupported)
+		return false;
 	Q_UNUSED(name);
 	Q_UNUSED(attributes);
 	qDebug() << Q_FUNC_INFO << name << uri;
@@ -67,6 +89,7 @@ bool SASLFeature::canParse(const QStringRef &name, const QStringRef &uri, const 
 
 void SASLFeature::handleStartElement(const QStringRef &name, const QStringRef &uri, const QXmlStreamAttributes &attributes)
 {
+	Q_ASSERT(m_isSupported);
 	Q_UNUSED(uri);
 	Q_UNUSED(attributes);
 	m_depth++;
@@ -85,6 +108,7 @@ void SASLFeature::handleStartElement(const QStringRef &name, const QStringRef &u
 
 void SASLFeature::handleEndElement(const QStringRef &name, const QStringRef &uri)
 {
+	Q_ASSERT(m_isSupported);
 	Q_UNUSED(uri);
 	if (m_depth == 2 && m_state == AtMechanism)
 		m_state = AtMechanisms;
@@ -101,6 +125,7 @@ void SASLFeature::handleEndElement(const QStringRef &name, const QStringRef &uri
 
 void SASLFeature::handleCharacterData(const QStringRef &text)
 {
+	Q_ASSERT(m_isSupported);
 	if (m_state == AtMechanism) {
 		qDebug() << Q_FUNC_INFO << "mechanism" << text;
 		m_mechs.append(text.toString());
@@ -112,11 +137,13 @@ void SASLFeature::handleCharacterData(const QStringRef &text)
 
 bool SASLFeature::isActivatable()
 {
-	return !m_mechs.isEmpty();
+	return m_isSupported && !m_mechs.isEmpty();
 }
 
 bool SASLFeature::activate()
 {
+	if (!m_isSupported)
+		return false;
 	init();
 	m_sasl->setPassword(QCA::SecureArray(m_info->password().toUtf8()));
 	m_sasl->setUsername(m_info->jid().node());

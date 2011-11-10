@@ -1,18 +1,28 @@
 /****************************************************************************
- *  client_p.h
- *
- *  Copyright (c) 2009 by Nigmatullin Ruslan <euroelessar@gmail.com>
- *  Copyright (c) 2010 by Sidorov Aleksey <sauron@citadelspb.com>
- *
- ***************************************************************************
- *                                                                         *
- *   This library is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************
-*****************************************************************************/
+**
+** Jreen
+**
+** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+**
+*****************************************************************************
+**
+** $JREEN_BEGIN_LICENSE$
+** This program is free software: you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+** See the GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see http://www.gnu.org/licenses/.
+** $JREEN_END_LICENSE$
+**
+****************************************************************************/
 
 #ifndef CLIENT_P_H
 #define CLIENT_P_H
@@ -23,7 +33,7 @@
 #include "jid.h"
 #include "parser.h"
 #include "directconnection.h"
-#include "streamfeature.h"
+#include "streamfeature_p.h"
 #include "iq.h"
 #include "iqreply.h"
 #include "message.h"
@@ -33,7 +43,7 @@
 #include "jstrings.h"
 #include "disco.h"
 #include "error.h"
-#include "stanzafactory.h"
+#include "stanzafactory_p.h"
 #include "buffereddatastream.h"
 #include <QTimer>
 #include <QTextCodec>

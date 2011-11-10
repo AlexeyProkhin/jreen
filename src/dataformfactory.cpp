@@ -1,17 +1,27 @@
 /****************************************************************************
- *  dataformfactory.cpp
- *
- *  Copyright (c) 2010 by Sidorov Aleksey <sauron@citadelspb.com>
- *
- ***************************************************************************
- *                                                                         *
- *   This library is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************
-*****************************************************************************/
+**
+** Jreen
+**
+** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+**
+*****************************************************************************
+**
+** $JREEN_BEGIN_LICENSE$
+** This program is free software: you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+** See the GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see http://www.gnu.org/licenses/.
+** $JREEN_END_LICENSE$
+**
+****************************************************************************/
 
 #include "dataformfactory_p.h"
 #include "jstrings.h"
@@ -328,6 +338,8 @@ void DataFormFactory::handleEndElement(const QStringRef &name, const QStringRef 
 			d->fields.append(d->fieldParser.create());
 			d->state = AtNowhere;
 		}
+	} else if(d->depth == 2) {
+		d->state = AtNowhere;
 	}
 	d->depth--;
 }
@@ -353,8 +365,10 @@ void DataFormFactory::serialize(Payload *extension, QXmlStreamWriter *writer)
 	DataForm *form = se_cast<DataForm*>(extension);
 	writer->writeStartElement(QLatin1String("x"));
 	writer->writeDefaultNamespace(NS_DATAFORM);
-	writeTextElement(writer,QLatin1String("title"),form->title());
-	//writer->writeTextElement(QLatin1String("instruction"),form->));
+	if (form->type() != DataForm::Invalid)
+		writer->writeAttribute(QLatin1String("type"), enumToStr(form->type(), dataform_types));
+	writeTextElement(writer,QLatin1String("title"), form->title());
+//	writer->writeTextElement(QLatin1String("instruction"), form->));
 	d->fieldParser.serialize(*form, writer);
 	writer->writeEndElement();
 }

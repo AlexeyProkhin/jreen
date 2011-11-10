@@ -1,18 +1,28 @@
 /****************************************************************************
- *  message.cpp
- *
- *  Copyright (c) 2009 by Nigmatullin Ruslan <euroelessar@gmail.com>
- *  Copyright (c) 2010 by Sidorov Aleksey <sauron@citadelspb.com>
- *
- ***************************************************************************
- *                                                                         *
- *   This library is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************
-*****************************************************************************/
+**
+** Jreen
+**
+** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+**
+*****************************************************************************
+**
+** $JREEN_BEGIN_LICENSE$
+** This program is free software: you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+** See the GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see http://www.gnu.org/licenses/.
+** $JREEN_END_LICENSE$
+**
+****************************************************************************/
 
 #include "message.h"
 #include "message_p.h"
@@ -36,7 +46,6 @@ Message::Message(Type type, const JID& to, const QString &body, const QString &s
 
 Message::Message(MessagePrivate &p) : Stanza(p)
 {
-
 }
 
 Message::Type Message::subtype() const
@@ -45,7 +54,7 @@ Message::Type Message::subtype() const
 	return d->subtype;
 }
 
-const QString &Message::body(const QString &lang) const
+QString Message::body(const QString &lang) const
 {
 	Q_D(const Message);
 	return d->body.value(lang);
@@ -56,7 +65,7 @@ void Message::setBody(const QString &text, const QString &lang)
 	d_func()->body.insert(lang, text);
 }
 
-const QString &Message::subject(const QString &lang) const
+QString Message::subject(const QString &lang) const
 {
 	Q_D(const Message);
 	return d->subject.value(lang);
@@ -67,7 +76,7 @@ void Message::setSubject(const QString &text, const QString &lang)
 	d_func()->subject.insert(lang, text);
 }
 
-const QString &Message::thread() const
+QString Message::thread() const
 {
 	Q_D(const Message);
 	return d->thread;
@@ -85,9 +94,9 @@ void Message::setID(const QString &id)
 	d->id = id;
 }
 
-const DelayedDelivery *Message::when() const
+DelayedDelivery::Ptr Message::when() const
 {
-	return payload<DelayedDelivery>().data();
+	return payload<DelayedDelivery>();
 }
 
 }

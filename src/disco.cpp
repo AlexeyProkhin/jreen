@@ -1,17 +1,27 @@
 /****************************************************************************
- *  disco.cpp
- *
- *  Copyright (c) 2009 by Nigmatullin Ruslan <euroelessar@gmail.com>
- *
- ***************************************************************************
- *                                                                         *
- *   This library is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************
-*****************************************************************************/
+**
+** Jreen
+**
+** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+**
+*****************************************************************************
+**
+** $JREEN_BEGIN_LICENSE$
+** This program is free software: you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+** See the GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see http://www.gnu.org/licenses/.
+** $JREEN_END_LICENSE$
+**
+****************************************************************************/
 
 #include "disco_p.h"
 #include "iq.h"
@@ -102,11 +112,11 @@ void DiscoInfoFactory::serialize(Payload *extension, QXmlStreamWriter *writer)
 	writer->writeDefaultNamespace(NS_DISCO_INFO);
 	foreach (const Disco::Identity &identity, info->identities()) {
 		writer->writeEmptyElement(QLatin1String("identity"));
-		writer->writeAttribute(QLatin1String("category"), identity.category);
-		writer->writeAttribute(QLatin1String("type"), identity.type);
-		writer->writeAttribute(QLatin1String("name"), identity.name);
-		if (!identity.lang.isEmpty())
-			writer->writeAttribute(QLatin1String("lang"), identity.lang);
+		writer->writeAttribute(QLatin1String("category"), identity.category());
+		writer->writeAttribute(QLatin1String("type"), identity.type());
+		writer->writeAttribute(QLatin1String("name"), identity.name());
+		if (!identity.lang().isEmpty())
+			writer->writeAttribute(QLatin1String("xml:lang"), identity.lang());
 	}
 	foreach (const QString &feature, info->features()) {
 		writer->writeEmptyElement(QLatin1String("feature"));
@@ -216,6 +226,117 @@ public:
 	mutable Disco::Item::Actions actions;
 };
 
+class Disco::IdentityData : public QSharedData
+{
+public:
+	IdentityData() {}
+	IdentityData(const IdentityData &o)
+	    : QSharedData(o), category(o.category), type(o.type), name(o.name), lang(o.lang) {}
+	
+	QString category;
+	QString type;
+	QString name;
+	QString lang;
+};
+
+class Disco::InfoPrivate
+{
+public:
+	QString node;
+	Disco::IdentityList identities;
+	QSet<QString> features;
+	DataForm::Ptr form;
+};
+
+class Disco::ItemsPrivate
+{
+public:
+	Disco::ItemList items;
+	QString node;
+};
+
+Disco::Identity::Identity() : d(new Disco::IdentityData)
+{
+}
+
+Disco::Identity::Identity(const QString &category, const QString &type, const QString &name, const QString &lang)
+    : d(new Disco::IdentityData)
+{
+	d->category = category;
+	d->type = type;
+	d->name = name;
+	d->lang = lang;
+}
+
+Disco::Identity::Identity(const Disco::Identity &item) : d(item.d)
+{
+}
+
+Disco::Identity &Disco::Identity::operator =(const Disco::Identity &item)
+{
+	d = item.d;
+	return *this;
+}
+
+Disco::Identity::~Identity()
+{
+}
+
+QString Disco::Identity::category() const
+{
+	return d->category;
+}
+
+QString Disco::Identity::type() const
+{
+	return d->type;
+}
+
+QString Disco::Identity::name() const
+{
+	return d->name;
+}
+
+QString Disco::Identity::lang() const
+{
+	return d->lang;
+}
+
+Disco::Info::Info(const QString &node, const Disco::IdentityList &identities,
+        const QSet<QString> &features, QSharedPointer<DataForm> form)
+    : d_ptr(new InfoPrivate)
+{
+	Q_D(Info);
+	d->node = node;
+	d->identities = identities;
+	d->features = features;
+	d->form = form;
+}
+
+Disco::Info::~Info()
+{
+}
+
+QString Disco::Info::node() const
+{
+	return d_func()->node;
+}
+
+Disco::IdentityList Disco::Info::identities() const
+{
+	return d_func()->identities;
+}
+
+QSet<QString> Disco::Info::features() const
+{
+	return d_func()->features;
+}
+
+DataForm::Ptr Disco::Info::form() const
+{
+	return d_func()->form;
+}
+
 Disco::Item::Item() : d(new Disco::ItemData)
 {
 }
@@ -281,8 +402,8 @@ bool Disco::Item::hasIdentity(const QString &category, const QString &type) cons
 {
 	Q_ASSERT(!category.isEmpty() || !type.isEmpty());
 	foreach (const Disco::Identity &identity, d->identities) {
-		if ((category.isEmpty() || identity.category == category)
-		        && (type.isEmpty() || identity.type == type)) {
+		if ((category.isEmpty() || identity.category() == category)
+		        && (type.isEmpty() || identity.type() == type)) {
 			return true;
 		}
 	}
@@ -358,6 +479,28 @@ Disco::Item::Actions Disco::Item::actions() const
 		}
 	}
 	return d->actions;
+}
+
+Disco::Items::Items(const QString &node, const Disco::ItemList &items)
+    : d_ptr(new ItemsPrivate)
+{
+	Q_D(Items);
+	d->node = node;
+	d->items = items;
+}
+
+Disco::Items::~Items()
+{
+}
+
+QString Disco::Items::node() const
+{
+	return d_func()->node;
+}
+
+Disco::ItemList Disco::Items::items() const
+{
+	return d_func()->items;
 }
 
 Disco::Disco(Client *client) : d_ptr(new DiscoPrivate)
@@ -445,6 +588,7 @@ void Disco::setSoftwareVersion(const QString &name, const QString &version, cons
 	d->software_version = version;
 	d->os = os;
 	DataForm::Ptr form = DataForm::Ptr::create();
+	form->setType(DataForm::Result);
 	form->appendField(DataFormFieldHidden(QLatin1String("FORM_TYPE"), QLatin1String("urn:xmpp:dataforms:softwareinfo")));
 	form->appendField(DataFormFieldNone(QLatin1String("ip_version"), QStringList() << QLatin1String("ipv4") << QLatin1String("ipv6")));
 	form->appendField(DataFormFieldNone(QLatin1String("os"), QStringList(os)));

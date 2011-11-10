@@ -1,18 +1,28 @@
 /****************************************************************************
- *  client.cpp
- *
- *  Copyright (c) 2009 by Nigmatullin Ruslan <euroelessar@gmail.com>
- *  Copyright (c) 2010 by Sidorov Aleksey <sauron@citadelspb.com>
- *
- ***************************************************************************
- *                                                                         *
- *   This library is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************
-*****************************************************************************/
+**
+** Jreen
+**
+** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+**
+*****************************************************************************
+**
+** $JREEN_BEGIN_LICENSE$
+** This program is free software: you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+** See the GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see http://www.gnu.org/licenses/.
+** $JREEN_END_LICENSE$
+**
+****************************************************************************/
 
 #include "client_p.h"
 #include "iq_p.h"
@@ -20,38 +30,42 @@
 #include "disco_p.h"
 #include "stanza_p.h"
 #include "tcpconnection.h"
-#include "nonsaslauth.h"
 #include "delayeddelivery.h"
-#include "chatstatefactory_p.h"
-#include "capabilitiesfactory_p.h"
-#include "errorfactory_p.h"
 #include "dataform.h"
-#include "iqfactory_p.h"
-#include "presencefactory_p.h"
-#include "messagefactory_p.h"
-#include "saslfeature.h"
-#include "tlsfeature.h"
-#include "bindfeature.h"
-#include "sessionfeature_p.h"
-#include "zlibcompressionfeature.h"
+#include "ping.h"
+#include "pubsubevent.h"
+#include "privatexml_p.h"
 #include <QStringBuilder>
-#include "delayeddeliveryfactory.h"
-#include "receiptfactory.h"
-#include "softwareversionfactory.h"
+
+// Factories
+#include "mucroomfactory_p.h"
+#include "entitytimefactory_p.h"
+#include "pubsubmanager_p.h"
+#include "tunefactory_p.h"
+#include "bookmarkfactory_p.h"
+#include "privacyqueryfactory_p.h"
+#include "delayeddeliveryfactory_p.h"
+#include "receiptfactory_p.h"
+#include "softwareversionfactory_p.h"
 #include "moodfactory_p.h"
 #include "activityfactory_p.h"
 #include "vcardfactory_p.h"
 #include "pingfactory_p.h"
 #include "vcardupdatefactory_p.h"
-#include "ping.h"
-#include "privatexml_p.h"
-#include "mucroomfactory_p.h"
-#include "entitytimefactory_p.h"
-#include "pubsubevent.h"
-#include "pubsubmanager_p.h"
-#include "tunefactory_p.h"
-#include "bookmarkfactory.h"
-#include "privacyqueryfactory_p.h"
+#include "iqfactory_p.h"
+#include "presencefactory_p.h"
+#include "messagefactory_p.h"
+#include "chatstatefactory_p.h"
+#include "capabilitiesfactory_p.h"
+#include "errorfactory_p.h"
+
+// Features
+#include "nonsaslauth_p.h"
+#include "saslfeature_p.h"
+#include "tlsfeature_p.h"
+#include "bindfeature_p.h"
+#include "sessionfeature_p.h"
+#include "zlibcompressionfeature_p.h"
 
 namespace Jreen
 {
@@ -75,7 +89,10 @@ void ClientPrivate::handleStanza(const Stanza::Ptr &stanza)
 			emit reply->received(*iq);
 			reply->deleteLater();
 		} else {
-			bool ok = jid.isDomain() || !roster || rooms.contains(iq->from().bare()) || iq->from().bare() == jid.bare();
+			bool ok = iq->from().isDomain()
+			        || !roster
+			        || rooms.contains(iq->from().bare())
+			        || iq->from().bare() == jid.bare();
 			if (!ok) {
 				RosterItem::Ptr item = roster->item(iq->from());
 				ok = item
@@ -158,7 +175,7 @@ void ClientPrivate::init()
 	q_ptr->registerStreamFeature(new BindFeature);
 	q_ptr->registerStreamFeature(new SessionFeature);
 	q_ptr->registerStreamFeature(new ZLibCompressionFeature);
-	presence.addExtension(new Capabilities(QString(), QLatin1String("http://Jreen.qutim.org/")));
+	presence.addExtension(new Capabilities(QString(), QLatin1String("http://qutim.org/jreen/")));
 }
 
 Client::Client(const JID &jid, const QString &password, int port)

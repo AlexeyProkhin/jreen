@@ -1,17 +1,27 @@
 /****************************************************************************
- *  vcardfactory.cpp
- *
- *  Copyright (c) 2010 by Sidorov Aleksey <sauron@citadelspb.com>
- *
- ***************************************************************************
- *                                                                         *
- *   This library is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************
-*****************************************************************************/
+**
+** Jreen
+**
+** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+**
+*****************************************************************************
+**
+** $JREEN_BEGIN_LICENSE$
+** This program is free software: you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+** See the GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see http://www.gnu.org/licenses/.
+** $JREEN_END_LICENSE$
+**
+****************************************************************************/
 
 #include "vcardfactory_p.h"
 #include "vcard_p.h"
@@ -44,6 +54,10 @@ void AbstractStructureParser::handleStartElement(const QStringRef &name, const Q
 	if (m_depth == 1) {
 		for (int i = 0; i < m_strings.size(); i++)
 			m_strings.at(i).second->clear();
+		for (int i = 0; i < m_byteArrays.size(); i++)
+			m_byteArrays.at(i).second->clear();
+		for (int i = 0; i < m_flags.size(); i++)
+			*m_flags.at(i).value = 0;
 	} else if (m_depth == 2){
 		for (int i = 0; i < m_strings.size(); i++) {
 			const QPair<QLatin1String, QString*> &p = m_strings.at(i);

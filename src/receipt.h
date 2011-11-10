@@ -1,18 +1,28 @@
 /****************************************************************************
- *  receipt.h
- *
- *  Copyright (c) 2009 by Nigmatullin Ruslan <euroelessar@gmail.com>
- *  Copyright (c) 2010 by Sidorov Aleksey <sauron@citadelspb.com>
- *
- ***************************************************************************
- *                                                                         *
- *   This library is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************
-*****************************************************************************/
+**
+** Jreen
+**
+** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+**
+*****************************************************************************
+**
+** $JREEN_BEGIN_LICENSE$
+** This program is free software: you can redistribute it and/or modify
+** it under the terms of the GNU General Public License as published by
+** the Free Software Foundation, either version 2 of the License, or
+** (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+** See the GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program.  If not, see http://www.gnu.org/licenses/.
+** $JREEN_END_LICENSE$
+**
+****************************************************************************/
 
 #ifndef RECEIPT_H
 #define RECEIPT_H
@@ -22,8 +32,10 @@
 namespace Jreen
 {
 
+class ReceiptPrivate;
 class JREEN_EXPORT Receipt : public Payload
 {
+	Q_DECLARE_PRIVATE(Receipt)
 	J_PAYLOAD(Jreen::Receipt)
 public:
 	enum Type
@@ -32,13 +44,14 @@ public:
 		Received	= 1,
 		Invalid		= -1
 	};
+
 	Receipt(Type type,const QString &id = QString());
-	inline Type type() { return m_type; }
-	inline QString id() {return m_id;}
-	virtual ~Receipt() {}
+	~Receipt();
+
+	Type type() const;
+	QString id() const;
 private:
-	Type m_type;
-	QString m_id;
+	QScopedPointer<ReceiptPrivate> d_ptr;
 };
 
 }
