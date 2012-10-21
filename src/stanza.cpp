@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -92,6 +92,11 @@ PayloadList Stanza::payloads() const
 void Stanza::removePayloads()
 {
 	d_ptr->extensions.clear();
+}
+
+void Stanza::removePayload(int id)
+{
+	d_ptr->extensions.remove(id);
 }
 
 Error::Ptr Stanza::error() const

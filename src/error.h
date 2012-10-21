@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -161,6 +161,7 @@ public:
 	~Error();
 
 	Type type() const;
+	QString text(const QString &lang = QString()) const;
 	Condition condition() const;
 	QString conditionText() const;
 private:

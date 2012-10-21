@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+** Copyright © 2011 Aleksey Sidorov <gorthauer87@yandex.ru>
 **
 *****************************************************************************
 **
@@ -31,7 +31,7 @@
 
 namespace Jreen {
 
-class MoodFactory : public PayloadFactory<Mood>
+class JREEN_AUTOTEST_EXPORT MoodFactory : public PayloadFactory<Mood>
 {
 public:
 	MoodFactory();

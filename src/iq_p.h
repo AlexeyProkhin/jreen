@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -34,7 +34,9 @@ namespace Jreen
 class IQPrivate : public StanzaPrivate
 {
 public:
-	IQPrivate() : StanzaPrivate(StanzaIq), accepted(false), connection(false) {}
+	IQPrivate() 
+	    : StanzaPrivate(StanzaIq), subtype(IQ::Invalid),
+	      accepted(false), connection(false) {}
 	IQ::Type subtype;
 	mutable bool accepted;
 	bool connection;

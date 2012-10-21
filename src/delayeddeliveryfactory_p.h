@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin euroelessar@yandex.ru
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -29,8 +29,8 @@
 namespace Jreen
 {
 
-class DelayedDeliveryFactoryPrivate;
-class DelayedDeliveryFactory : public PayloadFactory<DelayedDelivery>
+class JREEN_AUTOTEST_EXPORT DelayedDeliveryFactoryPrivate;
+class JREEN_AUTOTEST_EXPORT DelayedDeliveryFactory : public PayloadFactory<DelayedDelivery>
 {
 	Q_DECLARE_PRIVATE(DelayedDeliveryFactory)
 public:

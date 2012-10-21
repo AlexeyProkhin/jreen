@@ -2,8 +2,8 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
-** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Aleksey Sidorov <gorthauer87@yandex.ru>
 **
 *****************************************************************************
 **
@@ -43,6 +43,7 @@
 #include "pubsubmanager_p.h"
 #include "tunefactory_p.h"
 #include "bookmarkfactory_p.h"
+#include "metacontactsfactory_p.h"
 #include "privacyqueryfactory_p.h"
 #include "delayeddeliveryfactory_p.h"
 #include "receiptfactory_p.h"
@@ -58,6 +59,12 @@
 #include "chatstatefactory_p.h"
 #include "capabilitiesfactory_p.h"
 #include "errorfactory_p.h"
+#include "registrationqueryfactory_p.h"
+#include "bitsofbinaryfactory_p.h"
+#include "captchafactory_p.h"
+#include "pgpfactory_p.h"
+#include "forwardedfactory_p.h"
+#include "attentionfactory_p.h"
 
 // Features
 #include "nonsaslauth_p.h"
@@ -84,11 +91,12 @@ void ClientPrivate::handleStanza(const Stanza::Ptr &stanza)
 	int type = StanzaPrivate::get(*stanza)->type;
 	if (type == StanzaPrivate::StanzaIq) {
 		QSharedPointer<IQ> iq = stanza.staticCast<IQ>();
-		IQReply *reply = iqTracks.take(stanza->id());
-		if (reply) {
-			emit reply->received(*iq);
-			reply->deleteLater();
-		} else {
+		if (iq->subtype() == IQ::Result || iq->subtype() == IQ::Error) {
+			if (IQReply *reply = iqTracks.take(stanza->id())) {
+				emit reply->received(*iq);
+				reply->deleteLater();
+			}
+		} else if (iq->subtype() == IQ::Get || iq->subtype() == IQ::Set) {
 			bool ok = iq->from().isDomain()
 			        || !roster
 			        || rooms.contains(iq->from().bare())
@@ -108,7 +116,7 @@ void ClientPrivate::handleStanza(const Stanza::Ptr &stanza)
 				return;
 			}
 			q_ptr->handleIQ(*iq);
-			if (!iq->accepted() && (iq->subtype() == IQ::Set || iq->subtype() == IQ::Get)) {
+			if (!iq->accepted()) {
 				IQ error(IQ::Error, iq->from(), iq->id());
 				error.addExtension(new Error(Error::Cancel, Error::ServiceUnavailable));
 				send(error);
@@ -163,11 +171,16 @@ void ClientPrivate::init()
 	q_ptr->registerPayload(new MUCRoomOwnerQueryFactory);
 	q_ptr->registerPayload(new EntityTimeFactory);
 	q_ptr->registerPayload(new BookmarkFactory);
+	q_ptr->registerPayload(new MetaContactsFactory);
 	q_ptr->registerPayload(new PrivateXmlQueryFactory(q_ptr));
 	q_ptr->registerPayload(new PrivacyQueryFactory);
-//	client->registerPayload(new PubSub::EventFactory);
-//	client->registerPayload(new PubSub::PublishFacatory);
-	//client->registerPayload(new PrivateXml::QueryFactory);
+	q_ptr->registerPayload(new RegistrationQueryFactory);
+	q_ptr->registerPayload(new BitsOfBinaryFactory);
+	q_ptr->registerPayload(new CaptchaFactory);
+	q_ptr->registerPayload(new PGPSignedFactory);
+	q_ptr->registerPayload(new PGPEncryptedFactory);
+	q_ptr->registerPayload(new ForwardedFactory(q_ptr));
+	q_ptr->registerPayload(new AttentionFactory);
 
 	q_ptr->registerStreamFeature(new NonSaslAuth);
 	q_ptr->registerStreamFeature(new SASLFeature);
@@ -175,7 +188,7 @@ void ClientPrivate::init()
 	q_ptr->registerStreamFeature(new BindFeature);
 	q_ptr->registerStreamFeature(new SessionFeature);
 	q_ptr->registerStreamFeature(new ZLibCompressionFeature);
-	presence.addExtension(new Capabilities(QString(), QLatin1String("http://qutim.org/jreen/")));
+	presence.addExtension(new Capabilities(QString(), QLatin1String("http://qutim.org/jreen")));
 }
 
 Client::Client(const JID &jid, const QString &password, int port)
@@ -228,6 +241,47 @@ void Client::setServer(const QString &server)
 void Client::setPort(int port)
 {
 	d_func()->server_port = port;
+}
+
+void Client::setProxy(const QNetworkProxy &proxy)
+{
+	Q_D(Client);
+	d->proxy = proxy;
+}
+
+void Client::setFeatureConfig(Client::Feature feature, Client::FeatureConfig config)
+{
+	Q_D(Client);
+	if (feature < 0 || feature >= d->configs.size())
+		return;
+	d->configs[feature] = config;
+}
+
+Client::FeatureConfig Client::featureConfig(Client::Feature feature) const
+{
+	Q_D(const Client);
+	return d->configs.value(feature, Auto);
+}
+
+bool Client::isFeatureActivated(Client::Feature feature) const
+{
+	Q_D(const Client);
+	return (d->usedFeatures & (1 << feature));
+}
+
+QNetworkProxy Client::proxy() const
+{
+	return d_func()->proxy;
+}
+
+void Client::setProxyFactory(QNetworkProxyFactory *factory)
+{
+	d_func()->proxyFactory.reset(factory);
+}
+
+QNetworkProxyFactory *Client::proxyFactory() const
+{
+	return d_func()->proxyFactory.data();
 }
 
 void Client::addXmlStreamHandler(XmlStreamHandler *handler)
@@ -288,6 +342,14 @@ AbstractRoster *Client::roster()
 	return d_func()->roster;
 }
 
+JingleManager *Client::jingleManager()
+{
+	Q_D(Client);
+	if (!d->jingleManager)
+		d->jingleManager.reset(new JingleManager(this));
+	return d->jingleManager.data();
+}
+
 void Client::send(const Stanza &stanza)
 {
 	Q_D(Client);
@@ -299,8 +361,8 @@ void Client::send(const Stanza &stanza)
 void Client::send(const Presence &pres)
 {
 	Q_D(Client);
-	qDebug() << Q_FUNC_INFO << d->jid << d->conn << pres.priority();
-	qDebug() << (d->conn && d->conn->isOpen());
+	Logger::debug() << Q_FUNC_INFO << d->jid << d->conn << pres.priority();
+	Logger::debug() << (d->conn && d->conn->isOpen());
 	if(!d->conn || !d->conn->isOpen() || !d->isConnected)
 		return;
 	if (StanzaPrivate::get(pres) == StanzaPrivate::get(d->presence)) {
@@ -325,7 +387,7 @@ IQReply *Client::send(const IQ &iq)
 		const_cast<StanzaPrivate*>(p)->id = getID();
 	}
 
-	qDebug() << "send iq to" << iq.to() << "from" << iq.from();
+	Logger::debug() << "send iq to" << iq.to() << "from" << iq.from();
 	d->send(iq);
 	if (iq.subtype() == IQ::Set || iq.subtype() == IQ::Get) {
 		IQReply *reply = d->createIQReply();
@@ -347,7 +409,7 @@ void Client::send(const IQ &iq, QObject *handler, const char *member, int contex
 		const_cast<StanzaPrivate*>(p)->id = getID();
 	}
 
-	qDebug() << "send iq to" << iq.to() << "from" << iq.from();
+	Logger::debug() << "send iq to" << iq.to() << "from" << iq.from();
 	d->send(iq);
 	if (iq.subtype() == IQ::Set || iq.subtype() == IQ::Get) {
 		IQReply *reply = new IQTrack(handler, member, context, this);
@@ -361,10 +423,11 @@ void Client::setConnection(Connection *conn)
 	delete d->conn;
 	d->conn = conn;
 	d->streamProcessor = qobject_cast<StreamProcessor*>(conn);
-	d->device->setDevice(conn);
+	d->bufferedDevice->setDevice(conn);
 	//	connect(conn, SIGNAL(readyRead()), impl, SLOT(newData()));
 	connect(conn, SIGNAL(connected()), this, SLOT(_q_connected()));
-	connect(conn, SIGNAL(disconnected()), this, SLOT(_q_disconnected()));
+	connect(conn, SIGNAL(stateChanged(Jreen::Connection::SocketState)),
+	        this, SLOT(_q_stateChanged(Jreen::Connection::SocketState)));
 }
 
 Connection *Client::connection() const
@@ -388,14 +451,21 @@ inline bool featureLessThan(StreamFeature *a, StreamFeature *b)
 	return a->type() == b->type() ? a->priority() > b->priority() : a->type() < b->type();
 }
 
-void Client::registerStreamFeature(StreamFeature *stream_feature)
+void Client::registerStreamFeature(StreamFeature *streamFeature)
 {
 	Q_D(Client);
-	if(!stream_feature)
+	if(!streamFeature)
 		return;
 	d->features.insert(qLowerBound(d->features.begin(), d->features.end(),
-									  stream_feature, featureLessThan), stream_feature);
-	stream_feature->setStreamInfo(d->stream_info);
+	                               streamFeature, featureLessThan), streamFeature);
+	streamFeature->setStreamInfo(d->stream_info);
+}
+
+void Client::removeStreamFeature(StreamFeature *streamFeature)
+{
+	Q_D(Client);
+	d->features.removeAll(streamFeature);
+	streamFeature->setStreamInfo(0);
 }
 
 void Client::setPingInterval(int interval)
@@ -427,11 +497,23 @@ void Client::setPresence(Presence::Type type, const QString &text, int priority)
 void Client::connectToServer()
 {
 	Q_D(Client);
-	qDebug() << d->server_port;
 	if(!d->conn)
 		setConnection(new TcpConnection(d->server, d->server_port));
 
 	if(!d->conn->isOpen()) {
+		if (DirectConnection *connection = qobject_cast<DirectConnection*>(d->conn)) {
+			QNetworkProxy proxy;
+			if (d->proxyFactory) {
+				QUrl url = QUrl::fromUserInput(d->jid);
+				url.setScheme(QLatin1String("xmpp"));
+				QNetworkProxyQuery query(url);
+				proxy = d->proxyFactory->queryProxy(query).value(0);
+			} else {
+				proxy = d->proxy;
+			}
+			connection->setProxy(proxy);
+		}
+		
 		if (d->streamProcessor) {
 			d->streamProcessor->setJID(d->jid);
 			d->streamProcessor->setStreamParser(d->parser);
@@ -466,7 +548,7 @@ void ClientPrivate::_q_iq_received(const IQ &iq, int context)
 		serverIdentities = info->identities();
 		emit q_ptr->serverFeaturesReceived(serverFeatures);
 		emit q_ptr->serverIdentitiesReceived(serverIdentities);
-		qDebug() << serverFeatures;
+		Logger::debug() << serverFeatures;
 	}
 }
 
@@ -533,7 +615,7 @@ void Client::handleIQ(const IQ &iq)
 
 void Client::handleMessage(const Message &message)
 {
-	qDebug() << "Handle message" << message.from();
+	Logger::debug() << "Handle message" << message.from();
 	emit messageReceived(message);
 }
 
@@ -549,4 +631,4 @@ QString Client::password() const
 
 }
 
-#include "client.moc"
+#include "moc_client.cpp"

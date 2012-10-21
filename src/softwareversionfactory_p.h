@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin euroelessar@yandex.ru
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -28,8 +28,8 @@
 
 namespace Jreen {
 
-class SoftwareVersionFactoryPrivate;
-class SoftwareVersionFactory : public PayloadFactory<SoftwareVersion>
+class JREEN_AUTOTEST_EXPORT SoftwareVersionFactoryPrivate;
+class JREEN_AUTOTEST_EXPORT SoftwareVersionFactory : public PayloadFactory<SoftwareVersion>
 {
 	Q_DECLARE_PRIVATE(SoftwareVersionFactory)
 public:

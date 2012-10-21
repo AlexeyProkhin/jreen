@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+** Copyright © 2011 Aleksey Sidorov <gorthauer87@yandex.ru>
 **
 *****************************************************************************
 **
@@ -26,7 +26,7 @@
 #include "moodfactory_p.h"
 #include "jstrings.h"
 #include <QXmlStreamWriter>
-#include <QDebug>
+#include "logger.h"
 
 #define NS_MOOD QLatin1String("http://jabber.org/protocol/mood")
 

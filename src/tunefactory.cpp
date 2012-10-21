@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -27,7 +27,7 @@
 #include "jstrings.h"
 #include <QXmlStreamWriter>
 #include <QUrl>
-#include <QDebug>
+#include "logger.h"
 #include <QStringList>
 
 #define NS_TUNE QLatin1String("http://jabber.org/protocol/tune")

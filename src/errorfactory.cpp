@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+** Copyright © 2011 Aleksey Sidorov <gorthauer87@yandex.ru>
 **
 *****************************************************************************
 **
@@ -68,7 +68,7 @@ bool ErrorFactory::canParse(const QStringRef& name, const QStringRef& uri, const
 
 Payload::Ptr ErrorFactory::createPayload()
 {
-	return Payload::Ptr(new Error(m_type,m_condition));
+	return Payload::Ptr(new Error(m_type, m_condition, LangMap(m_text)));
 }
 
 QStringList ErrorFactory::features() const
@@ -83,6 +83,7 @@ void ErrorFactory::handleStartElement(const QStringRef& name, const QStringRef& 
 	if (m_depth == 1) {
 		QStringRef subtype = attributes.value(QLatin1String("type"));
 		m_type = strToEnum<Error::Type>(subtype,error_types);
+		m_text.clear();
 	} else if(m_depth == 2) {
 		if(name == QLatin1String("text"))
 			m_state = AtText;
@@ -95,7 +96,8 @@ void ErrorFactory::handleStartElement(const QStringRef& name, const QStringRef& 
 
 void ErrorFactory::handleCharacterData(const QStringRef& text)
 {
-	Q_UNUSED(text);
+	if (m_state == AtText)
+		m_text = text.toString();
 }
 void ErrorFactory::handleEndElement(const QStringRef& name, const QStringRef& uri)
 {

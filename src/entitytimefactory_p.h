@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -30,7 +30,7 @@
 
 namespace Jreen
 {
-	class EntityTimeFactory : public PayloadFactory<EntityTime>
+	class JREEN_AUTOTEST_EXPORT EntityTimeFactory : public PayloadFactory<EntityTime>
 	{
 	public:
 		EntityTimeFactory();

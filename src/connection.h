@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -83,8 +83,8 @@ signals:
 	void hostFound();
 	void connected();
 	void disconnected();
-	void stateChanged(SocketState);
-	void error(SocketError);
+	void stateChanged(Jreen::Connection::SocketState);
+	void error(Jreen::Connection::SocketError);
 
 protected:
 	virtual qint64 readData(char *data, qint64 maxlen) = 0;

@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -164,6 +164,7 @@ void PrivacyQueryFactory::serialize(Payload *extension, QXmlStreamWriter *writer
 				break;
 			case PrivacyItem::ByGroup:
 				value = item.group();
+				break;
 			case PrivacyItem::BySubscription:
 				value = enumToStr(item.subscription(), subscription_types);
 				break;

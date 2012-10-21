@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -26,11 +26,14 @@
 #include "saslfeature_p.h"
 #include "client_p.h"
 #include <QUrl>
-#include <QDebug>
+#include <QCoreApplication>
+#include "logger.h"
 
 #ifdef HAVE_SIMPLESASL
 # include "../3rdparty/simplesasl/simplesasl.h"
 #endif
+
+#define NS_SASL QLatin1String("urn:ietf:params:xml:ns:xmpp-sasl")
 
 namespace Jreen
 {
@@ -38,10 +41,9 @@ namespace Jreen
 SASLFeature::SASLFeature() : StreamFeature(SASL)
 {
 	QCA::init();
-	QCA::setAppName("jreen");
-	m_isSupported = QCA::isSupported("sasl");
+	QCA::setAppName(QCoreApplication::applicationName());
 	m_depth = 0;
-	qDebug() << QCA::supportedFeatures();
+	m_isSupported = QCA::isSupported("sasl");
 #ifdef HAVE_SIMPLESASL
 	if (!m_isSupported) {
 		QCA::insertProvider(XMPP::createProviderSimpleSASL());
@@ -84,8 +86,7 @@ bool SASLFeature::canParse(const QStringRef &name, const QStringRef &uri, const 
 		return false;
 	Q_UNUSED(name);
 	Q_UNUSED(attributes);
-	qDebug() << Q_FUNC_INFO << name << uri;
-	return uri == QLatin1String("urn:ietf:params:xml:ns:xmpp-sasl");
+	return uri == NS_SASL;
 }
 
 void SASLFeature::handleStartElement(const QStringRef &name, const QStringRef &uri, const QXmlStreamAttributes &attributes)
@@ -94,7 +95,6 @@ void SASLFeature::handleStartElement(const QStringRef &name, const QStringRef &u
 	Q_UNUSED(uri);
 	Q_UNUSED(attributes);
 	m_depth++;
-	qDebug() << Q_FUNC_INFO << m_depth << name;
 	if (m_depth == 1) {
 		if (name == QLatin1String("mechanisms")) {
 			m_state = AtMechanisms;
@@ -114,7 +114,6 @@ void SASLFeature::handleEndElement(const QStringRef &name, const QStringRef &uri
 	if (m_depth == 2 && m_state == AtMechanism)
 		m_state = AtMechanisms;
 	else if (m_depth == 1) {
-		qDebug() << Q_FUNC_INFO << name << m_mechs;
 		m_state = AtStart;
 		if (name == QLatin1String("success"))
 			m_info->completed(StreamInfo::Authorized | StreamInfo::ResendHeader);
@@ -128,10 +127,8 @@ void SASLFeature::handleCharacterData(const QStringRef &text)
 {
 	Q_ASSERT(m_isSupported);
 	if (m_state == AtMechanism) {
-		qDebug() << Q_FUNC_INFO << "mechanism" << text;
 		m_mechs.append(text.toString());
 	} else if (m_state == AtChallenge) {
-		qDebug() << Q_FUNC_INFO << "challenge" << text;
 		m_sasl->putStep(QByteArray::fromBase64(text.toString().toLatin1()));
 	}
 }
@@ -146,63 +143,56 @@ bool SASLFeature::activate()
 	if (!m_isSupported)
 		return false;
 	init();
-	m_sasl->setPassword(QCA::SecureArray(m_info->password().toUtf8()));
-	m_sasl->setUsername(m_info->jid().node());
-	m_sasl->setRealm(m_info->jid().domain());
-	m_sasl->setAuthzid(m_info->jid().bare());
 	m_sasl->setConstraints(QCA::SASL::AllowPlain);
 	m_sasl->startClient("xmpp", QUrl::toAce(m_info->jid().domain()), m_mechs, QCA::SASL::AllowClientSendFirst);
-	qDebug() << Q_FUNC_INFO << m_sasl->mechanismList();
 	return true;
 }
 
 void SASLFeature::onClientStarted(bool init, const QByteArray &data)
 {
-	qDebug() << Q_FUNC_INFO << init << data << m_sasl->mechanism();
-	QXmlStreamWriter *writer = ClientPrivate::get(m_client)->writer;
+	QXmlStreamWriter *writer = m_info->writer();
 	writer->writeStartElement(QLatin1String("auth"));
-	writer->writeDefaultNamespace(QLatin1String("urn:ietf:params:xml:ns:xmpp-sasl"));
+	writer->writeDefaultNamespace(NS_SASL);
 	writer->writeAttribute(QLatin1String("mechanism"), m_sasl->mechanism());
 	if (init)
 		writer->writeCharacters(QString::fromLatin1(data.toBase64()));
 	writer->writeEndElement();
-//	writer->writeCharacters(QString());
 }
 
 void SASLFeature::onNextStep(const QByteArray &data)
 {
-	qDebug() << Q_FUNC_INFO << data;
-	QXmlStreamWriter *writer = ClientPrivate::get(m_client)->writer;
+	QXmlStreamWriter *writer = m_info->writer();
 	writer->writeStartElement(QLatin1String("response"));
-	writer->writeDefaultNamespace(QLatin1String("urn:ietf:params:xml:ns:xmpp-sasl"));
+	writer->writeDefaultNamespace(NS_SASL);
 	writer->writeCharacters(QString::fromLatin1(data.toBase64()));
 	writer->writeEndElement();
 }
 
 void SASLFeature::onNeedParams(const QCA::SASL::Params &params)
 {
-	qDebug() << Q_FUNC_INFO << params.needPassword() << params.needUsername()
-			 << params.canSendAuthzid() << params.canSendRealm();
 	if (params.needPassword())
 		m_sasl->setPassword(QCA::SecureArray(m_info->password().toUtf8()));
 	if (params.needUsername())
 		m_sasl->setUsername(m_info->jid().node());
 	if (params.canSendRealm())
 		m_sasl->setRealm(m_info->jid().domain());
-//	if (params.canSendAuthzid())
-//		m_sasl->setAuthzid(m_info->jid().bare());
+	// ???
+	// Why SASL tells me that I can send Authzid?
+	/*if (params.canSendAuthzid() && m_info->jid().domain() != QLatin1String("chat.facebook.com"))
+		m_sasl->setAuthzid(m_info->jid().bare());*/
 	m_sasl->continueAfterParams();
 }
 
 void SASLFeature::onAuthCheck(const QString &user, const QString &authzid)
 {
-	qDebug() << Q_FUNC_INFO << user << authzid;
+	Q_UNUSED(user);
+	Q_UNUSED(authzid);
 	m_sasl->continueAfterAuthCheck();
 }
 
 void SASLFeature::onError()
 {
 	m_info->completed(StreamInfo::AuthorizationFailed);
-	qDebug() << Q_FUNC_INFO << (m_sasl ? m_sasl->errorCode() : -1);
+	Logger::debug() << Q_FUNC_INFO << (m_sasl ? m_sasl->errorCode() : -1);
 }
 }

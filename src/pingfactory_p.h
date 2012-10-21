@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+** Copyright © 2011 Aleksey Sidorov <gorthauer87@yandex.ru>
 **
 *****************************************************************************
 **
@@ -30,7 +30,7 @@
 namespace Jreen {
 
 //overkill
-class PingFactory : public PayloadFactory<Ping>
+class JREEN_AUTOTEST_EXPORT PingFactory : public PayloadFactory<Ping>
 {
 public:
 	PingFactory();

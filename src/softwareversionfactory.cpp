@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin euroelessar@yandex.ru
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -37,7 +37,7 @@ using namespace Util;
 
 static const char *query_strings[] = {"name","version","os"};
 
-class SoftwareVersionFactoryPrivate
+class JREEN_AUTOTEST_EXPORT SoftwareVersionFactoryPrivate
 {
 public:
 	int depth;

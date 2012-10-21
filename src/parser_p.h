@@ -2,8 +2,8 @@
 **
 ** Jreen
 **
-** Copyright (C) 2003 Justin Karneges
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2003 Justin Karneges <justin@affinix.com>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -52,12 +52,14 @@ class ParserPrivate
 {
 public:
 	QXmlStreamReader *reader;
+	QXmlStreamReader nullReader;
 	Parser::State state;
 	QStack<XmlStreamParser*> parsers;
 	QStack<int> parsersCount;
-	QList<Payload::Ptr> extensions;
+	QByteArray buffer;
 	int depth;
 	bool atParsing;
+	bool first;
 	ClientPrivate *client;
 #ifdef PARSER_DEBUG_SPEED
 	int parsingTime;

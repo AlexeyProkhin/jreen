@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -43,6 +43,7 @@ public:
 	void setNode(const QString &node);
 	QString node() const;
 	QString ver() const;
+	QString calculatedNode() const;
 private:
 	QScopedPointer<CapabilitiesPrivate> d_ptr;
 };

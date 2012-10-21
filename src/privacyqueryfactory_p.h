@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -30,7 +30,7 @@
 
 namespace Jreen
 {
-class PrivacyQueryFactory : public PayloadFactory<PrivacyQuery>
+class JREEN_AUTOTEST_EXPORT PrivacyQueryFactory : public PayloadFactory<PrivacyQuery>
 {
 public:
 	PrivacyQueryFactory();

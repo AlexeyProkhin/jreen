@@ -2,8 +2,8 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
-** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Aleksey Sidorov <gorthauer87@yandex.ru>
 **
 *****************************************************************************
 **
@@ -33,6 +33,9 @@
 #include "presence.h"
 #include "disco.h"
 
+class JREEN_AUTOTEST_EXPORT QNetworkProxyFactory;
+class QNetworkProxy;
+
 namespace Jreen
 {
 
@@ -46,6 +49,7 @@ class StreamFeature;
 class Disco;
 class MessageSessionManager;
 class AbstractRoster;
+class JingleManager;
 
 class XmlStreamHandler
 {
@@ -63,6 +67,7 @@ class JREEN_EXPORT Client : public QObject
 	Q_OBJECT
 	Q_PROPERTY(QSet<QString> serverFeatures READ serverFeatures NOTIFY serverFeaturesReceived)
 	Q_PROPERTY(Jreen::Disco::IdentityList serverIdentities READ serverIdentities NOTIFY serverIdentitiesReceived)
+	Q_ENUMS(DisconnectReason Feature FeatureConfig)
 	Q_DECLARE_PRIVATE(Client)
 public:
 
@@ -77,8 +82,26 @@ public:
 		InternalServerError,
 		SystemShutdown,
 		Conflict,
-		Unknown
+		Unknown,
+		NoCompressionSupport,
+		NoEncryptionSupport,
+		NoAuthorizationSupport,
+		NoSupportedFeature
 	};
+
+	enum Feature {
+		InvalidFeature = -1,
+		Compression = 0,
+		Encryption,
+		Authorization
+	};
+
+	enum FeatureConfig {
+		Force,
+		Disable,
+		Auto
+	};
+
 	Client(const JID &jid, const QString &password = QString(), int port = -1);
 	Client();
 	virtual ~Client();
@@ -89,6 +112,13 @@ public:
 	void setServer(const QString &server);
 	void setResource(const QString &resource);
 	void setPort(int port);
+	void setProxy(const QNetworkProxy &proxy);
+	void setFeatureConfig(Feature feature, FeatureConfig config);
+	FeatureConfig featureConfig(Feature feature) const;
+	bool isFeatureActivated(Feature feature) const;
+	QNetworkProxy proxy() const;
+	void setProxyFactory(QNetworkProxyFactory *factory);
+	QNetworkProxyFactory *proxyFactory() const;
 	void addXmlStreamHandler(XmlStreamHandler *handler);
 	QSet<QString> serverFeatures() const;
 	Disco::IdentityList serverIdentities() const;
@@ -100,6 +130,7 @@ public:
 	Disco *disco();
 	MessageSessionManager *messageSessionManager();
 	AbstractRoster *roster();
+	JingleManager *jingleManager();
 	bool isConnected() const;
 	void send(const Stanza &stanza);
 	void send(const Presence &pres);
@@ -108,7 +139,8 @@ public:
 	void setConnection(Connection *conn);
 	Connection *connection() const;
 	void registerPayload(AbstractPayloadFactory *factory);
-	void registerStreamFeature(StreamFeature *stream_feature);
+	void registerStreamFeature(StreamFeature *streamFeature);
+	void removeStreamFeature(StreamFeature *streamFeature);
 public slots:
 	void setPresence();
 	void setPresence(Jreen::Presence::Type type, const QString &text = QString(), int priority = -129);
@@ -139,7 +171,7 @@ private:
 	Q_PRIVATE_SLOT(d_func(), void _q_read_more())
 	Q_PRIVATE_SLOT(d_func(), void _q_send_header())
 	Q_PRIVATE_SLOT(d_func(), void _q_connected())
-	Q_PRIVATE_SLOT(d_func(), void _q_disconnected())
+	Q_PRIVATE_SLOT(d_func(), void _q_stateChanged(Jreen::Connection::SocketState))
 };
 
 }

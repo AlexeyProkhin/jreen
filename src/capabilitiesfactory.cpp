@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+** Copyright © 2011 Aleksey Sidorov <gorthauer87@yandex.ru>
 **
 *****************************************************************************
 **
@@ -33,17 +33,17 @@
 
 namespace Jreen {
 
-
-QString CapabilitesFactory::hashValue(Disco *disco)
+QString CapabilitesFactory::verificationValue(Jreen::Disco *disco)
 {
 	QString s;
 	QStringList sl;
 	const Disco::IdentityList &identity_list = disco->identities();
-	foreach(const Disco::Identity &i, identity_list)
+	foreach(const Disco::Identity &i, identity_list) {
 		sl << (i.category() % QLatin1Char('/')
 		       % i.type() % QLatin1Char('/')
 		       % i.lang() % QLatin1Char('/')
-		       % i.name());
+			   % i.name());
+	}
 	sl.sort();
 	foreach(const QString &str, sl)
 		s.append(str).append(QLatin1Char('<'));
@@ -65,13 +65,18 @@ QString CapabilitesFactory::hashValue(Disco *disco)
 		s.append(form_type).append(QLatin1Char('<'));
 
 		QMap<QString,QStringList>::iterator it = fields.begin();
-		for(; it != fields.end(); it++)
-		{
+		for(; it != fields.end(); it++) {
 			s.append(it.key()).append(QLatin1Char('<'));
 			foreach(const QString &value, it.value())
 				s.append(value).append(QLatin1Char('<'));
 		}
 	}
+	return s;
+}
+
+QString CapabilitesFactory::hashValue(Disco *disco)
+{
+	const QString s = verificationValue(disco);
 	return QString::fromLatin1(QCryptographicHash::hash(s.toUtf8(), QCryptographicHash::Sha1).toBase64());
 }
 
@@ -122,9 +127,9 @@ void CapabilitesFactory::serialize(Payload *extension, QXmlStreamWriter *writer)
 	QString ver = caps->ver().isEmpty() ? hashValue(m_disco) : caps->ver();
 	writer->writeStartElement(QLatin1String("c"));
 	writer->writeDefaultNamespace(NS_CAPS);
-	writer->writeAttribute(QLatin1String("hash"),QLatin1String("sha-1"));
-	writer->writeAttribute(QLatin1String("ver"),ver);
-	writer->writeAttribute(QLatin1String("node"),caps->node());
+	writer->writeAttribute(QLatin1String("hash"), QLatin1String("sha-1"));
+	writer->writeAttribute(QLatin1String("ver"), ver);
+	writer->writeAttribute(QLatin1String("node"), caps->node());
 	writer->writeEndElement();
 }
 

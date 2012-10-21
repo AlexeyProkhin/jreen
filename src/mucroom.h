@@ -2,8 +2,8 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
-** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Aleksey Sidorov <gorthauer87@yandex.ru>
 **
 *****************************************************************************
 **
@@ -75,6 +75,7 @@ public:
 		bool isNickChanged() const;
 		bool isBanned() const;
 		bool isKicked() const;
+		bool isJoined() const;
 		QString newNick() const;
 		QString reason() const;
 		JID realJID() const;

@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -86,7 +86,7 @@ private:
 	Type m_type;
 };
 
-class PrivateXmlQueryFactory : public PayloadFactory<PrivateXmlQuery>
+class JREEN_AUTOTEST_EXPORT PrivateXmlQueryFactory : public PayloadFactory<PrivateXmlQuery>
 {
 public:
 	PrivateXmlQueryFactory(Client *client);

@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -57,6 +57,11 @@ Error::~Error()
 Error::Type Error::type() const
 {
 	return d_func()->type;
+}
+
+QString Error::text(const QString &lang) const
+{
+	return d_func()->text.value(lang);
 }
 
 Error::Condition Error::condition() const

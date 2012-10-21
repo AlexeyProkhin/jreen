@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin euroelessar@yandex.ru
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -24,8 +24,10 @@
 ****************************************************************************/
 #ifndef MESSAGE_P_H
 #define MESSAGE_P_H
+
 #include "stanza_p.h"
 #include "langmap.h"
+#include "message.h"
 
 namespace Jreen
 {
@@ -33,7 +35,7 @@ namespace Jreen
 class MessagePrivate : public StanzaPrivate
 {
 public:
-	MessagePrivate() : StanzaPrivate(StanzaMessage) {}
+	MessagePrivate() : StanzaPrivate(StanzaMessage), subtype(Message::Normal) {}
 	Message::Type subtype;
 	LangMap body;
 	LangMap subject;

@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+** Copyright © 2011 Aleksey Sidorov <gorthauer87@yandex.ru>
 **
 *****************************************************************************
 **
@@ -28,8 +28,8 @@
 
 namespace Jreen {
 
-class ReceiptFactoryPrivate;
-class ReceiptFactory : public PayloadFactory<Receipt>
+class JREEN_AUTOTEST_EXPORT ReceiptFactoryPrivate;
+class JREEN_AUTOTEST_EXPORT ReceiptFactory : public PayloadFactory<Receipt>
 {
 	Q_DECLARE_PRIVATE(ReceiptFactory)
 public:

@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -68,7 +68,7 @@ protected:
 	QString m_ver;
 };
 
-class AbstractRosterQueryFactory : public PayloadFactory<AbstractRosterQuery>
+class JREEN_AUTOTEST_EXPORT AbstractRosterQueryFactory : public PayloadFactory<AbstractRosterQuery>
 {
 public:
 	AbstractRosterQueryFactory(AbstractRoster *roster);

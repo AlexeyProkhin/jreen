@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -52,6 +52,7 @@ public:
 	~Parser();
 	void reset();
 	void activateFeature();
+	QByteArray nextPart(QByteArray &data, bool first, bool *needMoreData);
 	
 	bool canParse(const QStringRef &name, const QStringRef &uri, const QXmlStreamAttributes &attributes);
 	void handleStartElement(const QStringRef &name, const QStringRef &uri, const QXmlStreamAttributes &attributes);

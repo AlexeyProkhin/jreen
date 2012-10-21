@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -31,7 +31,7 @@
 
 namespace Jreen
 {
-	class TuneFactory : public PayloadFactory<Tune>
+	class JREEN_AUTOTEST_EXPORT TuneFactory : public PayloadFactory<Tune>
 	{
 	public:
 		TuneFactory();

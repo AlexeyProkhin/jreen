@@ -2,8 +2,8 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
-** Copyright (C) 2011 Sidorov Aleksey <sauron@citadelspb.com>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Aleksey Sidorov <gorthauer87@yandex.ru>
 **
 *****************************************************************************
 **
@@ -33,7 +33,7 @@
 
 namespace Jreen
 {
-class PresenceFactory : public StanzaFactory
+class JREEN_AUTOTEST_EXPORT PresenceFactory : public StanzaFactory
 {
 public:
 	enum State { AtNowhere, AtShow, AtStatus,AtPriority };
@@ -46,13 +46,8 @@ public:
 	void handleEndElement(const QStringRef &name, const QStringRef &uri);
 	void handleCharacterData(const QStringRef &name);
 private:
-	void clear();
-	int m_depth;
-	Presence::Type m_subtype;
-	int m_priority;
-	LangMap m_status;
 	State m_state;
-	QStringRef m_xmllang;
+	QString m_xmllang;
 };
 }
 

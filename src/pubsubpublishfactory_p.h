@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -33,7 +33,7 @@ namespace Jreen
 {
 namespace PubSub
 {
-class PublishFactory : public PayloadFactory<Publish>
+class JREEN_AUTOTEST_EXPORT PublishFactory : public PayloadFactory<Publish>
 {
 public:
 	PublishFactory(QList<AbstractPayloadFactory*> &factories);

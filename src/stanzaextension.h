@@ -2,7 +2,7 @@
 **
 ** Jreen
 **
-** Copyright (C) 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
+** Copyright © 2011 Ruslan Nigmatullin <euroelessar@yandex.ru>
 **
 *****************************************************************************
 **
@@ -52,8 +52,10 @@ public:
 	virtual ~Payload();
 	
 	static int registerPayloadType(const char *type);
+	static const char *payloadName(int type);
 	
 	virtual int payloadType() const = 0;
+	const char *payloadName() const;
 };
 
 typedef QMultiMap<int, Payload::Ptr> PayloadList;
@@ -73,7 +75,7 @@ public:
 typedef QMap<int, AbstractPayloadFactory*> PayloadFactoryMap;
 
 template <typename Extension>
-class PayloadFactory : public AbstractPayloadFactory
+class JREEN_AUTOTEST_EXPORT PayloadFactory : public AbstractPayloadFactory
 {
 	Q_DISABLE_COPY(PayloadFactory)
 public:
@@ -81,20 +83,6 @@ public:
 	virtual ~PayloadFactory();
 	
 	virtual int payloadType() const;
-};
-
-template <typename Extension>
-class SimplePayloadFactory : public PayloadFactory<Extension>
-{
-	Q_DISABLE_COPY(SimplePayloadFactory)
-public:
-	SimplePayloadFactory(const QString &name, const QString &uri, Client *client);
-	virtual ~SimplePayloadFactory();
-	
-	virtual bool canParse(const QStringRef &name, const QStringRef &uri, const QXmlStreamAttributes &attributes);
-private:
-	QString m_elementName;
-	QString m_elementUri;
 };
 
 //template <typename T>
@@ -121,30 +109,18 @@ Q_INLINE_TEMPLATE int PayloadFactory<Extension>::payloadType() const
 	return Extension::staticPayloadType();
 }
 
-template <typename Extension>
-Q_INLINE_TEMPLATE SimplePayloadFactory<Extension>::SimplePayloadFactory(const QString &name, const QString &uri, Client *client)
-	: SimplePayloadFactory(client), m_elementName(name), m_elementUri(uri)
+template <typename T>
+Q_INLINE_TEMPLATE T payload_cast(Payload *se)
 {
-}
-
-template <typename Extension>
-Q_INLINE_TEMPLATE SimplePayloadFactory<Extension>::~SimplePayloadFactory()
-{
-}
-
-template <typename Extension>
-Q_INLINE_TEMPLATE bool SimplePayloadFactory<Extension>::canParse(const QStringRef &name, const QStringRef &uri,
-                                                                 const QXmlStreamAttributes &)
-{
-	return name == m_elementName && uri == m_elementUri;
+	if (se && reinterpret_cast<T>(0)->staticPayloadType() == se->payloadType())
+		return static_cast<T>(se);
+	return 0;
 }
 
 template <typename T>
 Q_INLINE_TEMPLATE T se_cast(Payload *se)
 {
-	if (se && reinterpret_cast<T>(0)->staticPayloadType() == se->payloadType())
-		return static_cast<T>(se);
-	return 0;
+	return payload_cast<T>(se);
 }
 }
 
